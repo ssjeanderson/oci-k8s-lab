@@ -1,0 +1,14 @@
+
+[masters]
+%{ for index, instance in instance ~}
+%{ if index == 0 ~}
+${ instance.display_name }   ansible_host=${ instance.public_ip }   private_ip=${ instance.private_ip }
+%{ endif ~}
+%{ endfor ~}
+
+[workers]
+%{ for index, instance in instance ~}
+%{ if index > 0 ~}
+${ instance.display_name }   ansible_host=${ instance.public_ip }   private_ip=${ instance.private_ip }
+%{ endif ~}
+%{ endfor ~}

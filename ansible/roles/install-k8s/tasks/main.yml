@@ -1,0 +1,103 @@
+---
+# tasks file for install-k8s
+- name: Install dependencies
+  apt:
+    update_cache: yes
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - apt-transport-https
+    state: present
+
+# - name: Add Docker apt key
+#   ansible.builtin.shell:
+#     cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --batch --yes --dearmor -o /etc/apt/keyrings/docker.gpg
+#     creates: /etc/apt/keyrings/docker.gpg
+
+# - name: Add docker repository (AMD64)
+#   when: ansible_architecture == "x86_64"
+#   ansible.builtin.apt_repository:
+#     repo: deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+#     update_cache: no
+#     filename: docker
+#     state: present
+
+# - name: Add docker repository (ARM64)
+#   when: ansible_architecture == "aarch64"
+#   ansible.builtin.apt_repository:
+#     repo: deb [arch=arm64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+#     update_cache: no
+#     filename: docker
+#     state: present
+
+- name: Install Containerd
+  apt:
+    update_cache: no
+    name:
+      - containerd
+    state: present
+
+- name: Creates containerd dir
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+
+- name: Reset Containerd to default config
+  shell: containerd config default > /etc/containerd/config.toml
+
+- name: Change Containerd config to use Cgroups
+  ansible.builtin.replace:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup =.*'
+    replace: 'SystemdCgroup = true'
+  notify: Restart Containerd
+
+- name: Copy Kernel Load Modules
+  copy:
+    src: modules_k8s.conf
+    dest: /etc/modules-load.d/
+  notify: Load Kernel Modules
+
+- name: Copy required sysctl
+  copy:
+    src: sysctl_k8s.conf
+    dest: /etc/sysctl.d/
+  notify: Apply Required Sysctl
+
+- name: Remove swap mount from /etc/fstab
+  mount:
+    backup: yes
+    path: none
+    state: absent
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Add kubernetes apt key
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Add kubernetes repo
+  ansible.builtin.apt_repository:
+    repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
+    update_cache: yes
+    filename: kubernetes
+    state: present
+
+- name: Install kubelet, kubeadm and kubectl
+  apt:
+    update_cache: no
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+
+- name: Install Helm
+  shell: curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  
+

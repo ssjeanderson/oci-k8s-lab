@@ -1,0 +1,51 @@
+---
+# tasks file for setup-k8s-cluster
+- name: Configure Weavenet pod network
+  shell: kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s-1.11.yaml
+
+- name: Install metrics-server
+  shell: |
+    curl -sL https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml | sed '/- --secure-port=4443/a\
+            - --kubelet-insecure-tls' | kubectl apply --wait=true -f -  
+
+- name: Configure ingress-nginx
+  shell: |
+    helm upgrade --wait --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
+      --namespace ingress-nginx --create-namespace \
+      --set controller.service.type=NodePort \
+      --set controller.service.nodePorts.http=30080 \
+      --set controller.service.nodePorts.https=30443
+
+- name: Configure nfs-subdir-external-provisioner
+  shell: |
+    helm upgrade --wait --install nfs-subdir-external-provisioner nfs-subdir-external-provisioner \
+      --repo https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner \
+      --namespace nfs-provisioner --create-namespace \
+      --set storageClass.defaultClass=true \
+      --set storageClass.onDelete=delete \
+      --set nfs.server={{ hostvars['k8slab_instance-0']['private_ip'] }} \
+      --set nfs.path=/nfs
+
+# - name: Configure portainer
+#   shell: |
+#     helm upgrade --install portainer portainer \
+#       --repo https://portainer.github.io/k8s/ \
+#       --create-namespace -n portainer \
+#       --set service.type=ClusterIP \
+#       --set tls.force=true \
+#       --set ingress.enabled=true \
+#       --set ingress.ingressClassName=nginx \
+#       --set ingress.annotations."nginx\.ingress\.kubernetes\.io/backend-protocol"=HTTPS \
+#       --set ingress.hosts[0].host=ocik8s.duckdns.org \
+#       --set ingress.hosts[0].paths[0].path="/"
+
+# - name: Configure cert-manager
+#   shell: |
+#     helm upgrade --install cert-manager cert-manager \
+#       --repo https://charts.jetstack.io \
+#       --namespace cert-manager --create-namespace \
+#       --set installCRDs=true
+
+
+  

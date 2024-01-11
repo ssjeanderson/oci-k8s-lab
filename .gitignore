@@ -1,0 +1,8 @@
+*.pem
+
+.env
+inventory
+config
+
+terraform/.terraform*
+terraform/terraform.tfstate*

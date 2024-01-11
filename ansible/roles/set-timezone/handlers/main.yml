@@ -1,0 +1,9 @@
+---
+# handlers file for set-timezone
+- name: Restart affected services
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+     - rsyslog
+     - cron

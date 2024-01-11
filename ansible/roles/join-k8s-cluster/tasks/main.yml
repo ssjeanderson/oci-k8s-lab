@@ -1,0 +1,7 @@
+---
+# tasks file for join-k8s-cluster
+- name: Remove old cluster
+  command: kubeadm reset --force
+  
+- name: Joining to the cluster
+  command: "{{ hostvars[groups['masters'][0]]['join_command'] }}"

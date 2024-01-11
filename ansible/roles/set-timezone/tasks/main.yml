@@ -1,0 +1,6 @@
+---
+# tasks file for set-timezone
+- name: Set timezone to America/Recife
+  community.general.timezone:
+    name: America/Recife
+  notify: Restart affected services

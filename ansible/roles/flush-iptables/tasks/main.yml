@@ -1,0 +1,13 @@
+---
+# tasks file for iptables-rules
+- name: Iptables flush filter
+  ansible.builtin.iptables:
+    chain: "{{ item }}"
+    flush: yes
+  with_items:  [ 'INPUT', 'FORWARD' ]
+
+- name: Save current state of the firewall in system file
+  community.general.iptables_state:
+    table: filter
+    state: saved
+    path: /etc/iptables/rules.v4

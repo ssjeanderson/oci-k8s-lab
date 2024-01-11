@@ -1,0 +1,10 @@
+---
+# tasks file for basic-packages
+- name: Install Common Packages
+  apt:
+    update_cache: yes
+    name:
+      - rsyslog
+      - cron
+      - vim
+    state: present

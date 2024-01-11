@@ -1,0 +1,7 @@
+---
+# handlers file for setup-nfs-server
+- name: Restart NFS
+  become: yes
+  ansible.builtin.service:
+    name: nfs-kernel-server
+    state: restarted
