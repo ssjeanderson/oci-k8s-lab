@@ -1,3 +1,6 @@
+data "oci_identity_availability_domains" "availability_domains" {
+  compartment_id = oci_identity_compartment.k8slab_compartment.id
+}
 
 resource "oci_core_instance" "k8slab_instance" {
   count = 4
@@ -20,7 +23,8 @@ resource "oci_core_instance" "k8slab_instance" {
 	availability_config {
 		recovery_action = "RESTORE_INSTANCE"
 	}
-	availability_domain = "CjRk:SA-SAOPAULO-1-AD-1"
+	#availability_domain = "CjRk:SA-SAOPAULO-1-AD-1"
+	availability_domain = data.oci_identity_availability_domains.availability_domains.availability_domains[0].name
 	compartment_id = oci_identity_compartment.k8slab_compartment.id
 	create_vnic_details {
 		assign_private_dns_record = "true"
