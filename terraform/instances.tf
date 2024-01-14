@@ -42,7 +42,7 @@ resource "oci_core_instance" "k8slab_instance" {
 		ocpus = "1"
 	}
 	source_details {
-		source_id = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaaovmgmjdepm5x372pzvkq7nuwhwt3vaiexr3wfweyozl2br5e6wsq"
+		source_id = "ocid1.image.oc1.sa-saopaulo-1.aaaaaaaa6j7vql6xwhdbn4n4iqm3vna3tvhfev6br5cxavtafknowufr4f5q"
 		source_type = "image"
 	}
 }
