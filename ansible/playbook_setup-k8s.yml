@@ -11,7 +11,6 @@
 - hosts: masters
   become: yes
   roles:
-    - setup-nfs-server
     - init-k8s-cluster
 
 - hosts: workers
@@ -22,7 +21,8 @@
 - hosts: masters
   become: yes
   roles:
-    - setup-k8s-cluster
+    - setup-nfs-server
+    - setup-k8s-extras
 
 - name: Fetch kube config
   hosts: k8slab_instance-0
